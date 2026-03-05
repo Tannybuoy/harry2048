@@ -32,12 +32,12 @@ const HarryPotter2048 = () => {
     const newGrid = Array(4)
       .fill(null)
       .map(() => Array(4).fill(0));
-    addNewTile(newGrid);
-    addNewTile(newGrid);
+    addNewTile(newGrid, false);
+    addNewTile(newGrid, false);
     return newGrid;
   }
 
-  function addNewTile(currentGrid) {
+  function addNewTile(currentGrid, animate = true) {
     const empty = [];
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
@@ -48,19 +48,21 @@ const HarryPotter2048 = () => {
       const [i, j] = empty[Math.floor(Math.random() * empty.length)];
       const newValue = Math.random() < 0.9 ? 2 : 4;
       currentGrid[i][j] = newValue;
-      
-      setAnimatingTiles(prev => ({
-        ...prev,
-        [`${i}-${j}`]: 'pop',
-      }));
-      
-      setTimeout(() => {
-        setAnimatingTiles(prev => {
-          const newState = { ...prev };
-          delete newState[`${i}-${j}`];
-          return newState;
-        });
-      }, 300);
+
+      if (animate) {
+        setAnimatingTiles(prev => ({
+          ...prev,
+          [`${i}-${j}`]: 'pop',
+        }));
+
+        setTimeout(() => {
+          setAnimatingTiles(prev => {
+            const newState = { ...prev };
+            delete newState[`${i}-${j}`];
+            return newState;
+          });
+        }, 300);
+      }
     }
   }
 
