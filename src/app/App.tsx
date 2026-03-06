@@ -55,6 +55,20 @@ export default function App() {
             <div className="text-[#E89AC7] text-sm uppercase tracking-wide mb-1">Moves</div>
             <div className="text-[#F4B860] text-3xl font-bold">{gameState.moves}</div>
           </div>
+        </div>
+
+        {/* Game Board */}
+        <div className="flex justify-center">
+          <GameBoard board={gameState.board} tiles={gameState.tiles} />
+        </div>
+
+        {/* Instructions */}
+        <div className="mt-6 text-center text-[#E89AC7] text-sm">
+          <p>Use arrow keys to move tiles. Merge identical items to progress!</p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4 mt-4">
           <button
             onClick={resetGame}
             className="bg-[#F4B860] hover:bg-[#F5C997] text-[#594761] p-4 rounded-2xl transition-all shadow-lg hover:shadow-xl"
@@ -69,16 +83,6 @@ export default function App() {
           >
             <HelpCircle className="w-6 h-6" />
           </button>
-        </div>
-
-        {/* Game Board */}
-        <div className="flex justify-center">
-          <GameBoard board={gameState.board} tiles={gameState.tiles} />
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-6 text-center text-[#E89AC7] text-sm">
-          <p>Use arrow keys to move tiles. Merge identical items to progress!</p>
         </div>
       </div>
 
