@@ -77,13 +77,13 @@ function move(board: BoardState, direction: Direction): { board: BoardState; sco
   let rotations = 0;
   if (direction === "up") {
     rotations = 1;
-    newBoard = rotateClockwise(newBoard);
+    newBoard = rotateCounterClockwise(newBoard);
   } else if (direction === "right") {
     rotations = 2;
     newBoard = rotateClockwise(rotateClockwise(newBoard));
   } else if (direction === "down") {
     rotations = 3;
-    newBoard = rotateCounterClockwise(newBoard);
+    newBoard = rotateClockwise(newBoard);
   }
 
   // Slide and merge left
@@ -114,11 +114,11 @@ function move(board: BoardState, direction: Direction): { board: BoardState; sco
 
   // Rotate back
   if (direction === "up") {
-    newBoard = rotateCounterClockwise(newBoard);
+    newBoard = rotateClockwise(newBoard);
   } else if (direction === "right") {
     newBoard = rotateClockwise(rotateClockwise(newBoard));
   } else if (direction === "down") {
-    newBoard = rotateClockwise(newBoard);
+    newBoard = rotateCounterClockwise(newBoard);
   }
 
   return { board: newBoard, score, moved };
