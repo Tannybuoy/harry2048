@@ -4,7 +4,7 @@ import { GameOverModal } from "./components/GameOverModal";
 import { RulesModal } from "./components/RulesModal";
 import { useGame } from "./hooks/useGame";
 import { Sparkles, RotateCcw, HelpCircle } from "lucide-react";
-import backgroundImage from "figma:asset/c6e6b6731e9c9e71624909843c3e9c548ee1f04a.png";
+import backgroundImage from "../../background.jpg";
 
 export default function App() {
   const { gameState, resetGame } = useGame();
