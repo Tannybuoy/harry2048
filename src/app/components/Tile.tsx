@@ -42,7 +42,7 @@ export function Tile({ tile }: TileProps) {
         scale: tile.isNew
           ? { type: "spring", stiffness: 400, damping: 20, delay: 0.1 }
           : tile.isMerged
-            ? { duration: 0.15 }
+            ? { type: "spring", stiffness: 400, damping: 30 }
             : { duration: 0 },
         opacity: tile.isNew
           ? { duration: 0.1, delay: 0.1 }
