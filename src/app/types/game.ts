@@ -1,9 +1,11 @@
 export type BoardState = (number | null)[][];
 
 export interface TileData {
-  id: string;
+  id: number;
   value: number;
   position: { row: number; col: number };
+  isNew?: boolean;
+  isMerged?: boolean;
 }
 
 export interface GameState {

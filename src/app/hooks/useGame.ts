@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import type { GameState, Direction, BoardState, TileData } from "../types/game";
 
+let nextTileId = 1;
+
 function createEmptyBoard(): BoardState {
   return Array.from({ length: 4 }, () => Array(4).fill(null));
 }
@@ -17,118 +19,135 @@ function getEmptyCells(board: BoardState): { row: number; col: number }[] {
   return empty;
 }
 
-function addRandomTile(board: BoardState): BoardState {
+function buildBoard(tiles: TileData[]): BoardState {
+  const board = createEmptyBoard();
+  for (const tile of tiles) {
+    board[tile.position.row][tile.position.col] = tile.value;
+  }
+  return board;
+}
+
+function createTile(row: number, col: number, value: number, isNew: boolean): TileData {
+  return {
+    id: nextTileId++,
+    value,
+    position: { row, col },
+    isNew,
+    isMerged: false,
+  };
+}
+
+function addRandomTile(tiles: TileData[]): TileData[] {
+  const board = buildBoard(tiles);
   const emptyCells = getEmptyCells(board);
-  if (emptyCells.length === 0) return board;
+  if (emptyCells.length === 0) return tiles;
 
   const { row, col } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
   const value = Math.random() < 0.9 ? 2 : 4;
 
-  const newBoard = board.map((r) => [...r]);
-  newBoard[row][col] = value;
-  return newBoard;
+  return [...tiles, createTile(row, col, value, true)];
 }
 
-function boardToTiles(board: BoardState): TileData[] {
-  const tiles: TileData[] = [];
-  for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 4; col++) {
-      const value = board[row][col];
-      if (value !== null) {
-        tiles.push({
-          id: `${row}-${col}-${value}`,
-          value,
-          position: { row, col },
-        });
-      }
-    }
+// Rotate a position clockwise: (r,c) → (c, 3-r)
+function rotateCW(p: { row: number; col: number }): { row: number; col: number } {
+  return { row: p.col, col: 3 - p.row };
+}
+
+// Rotate a position counter-clockwise: (r,c) → (3-c, r)
+function rotateCCW(p: { row: number; col: number }): { row: number; col: number } {
+  return { row: 3 - p.col, col: p.row };
+}
+
+function applyRotation(
+  pos: { row: number; col: number },
+  fn: (p: { row: number; col: number }) => { row: number; col: number },
+  times: number,
+): { row: number; col: number } {
+  let p = pos;
+  for (let i = 0; i < times; i++) {
+    p = fn(p);
   }
-  return tiles;
+  return p;
 }
 
-function move(board: BoardState, direction: Direction): { board: BoardState; score: number; moved: boolean } {
-  let newBoard = board.map((r) => [...r]);
+function moveTiles(
+  currentTiles: TileData[],
+  direction: Direction,
+): { tiles: TileData[]; score: number; moved: boolean } {
+  // Clone tiles, clear animation flags
+  let tiles: TileData[] = currentTiles.map((t) => ({
+    ...t,
+    position: { ...t.position },
+    isNew: false,
+    isMerged: false,
+  }));
+
+  // Pre-rotate positions to normalize all directions to "slide left"
+  // Matching the original board rotation logic:
+  //   up:    rotateCCW(board) → slide left → rotateCW(board)
+  //   right: rotate180        → slide left → rotate180
+  //   down:  rotateCW(board)  → slide left → rotateCCW(board)
+  if (direction === "up") {
+    tiles.forEach((t) => (t.position = rotateCCW(t.position)));
+  } else if (direction === "right") {
+    tiles.forEach((t) => (t.position = applyRotation(t.position, rotateCW, 2)));
+  } else if (direction === "down") {
+    tiles.forEach((t) => (t.position = rotateCW(t.position)));
+  }
+
   let score = 0;
   let moved = false;
+  const toRemove = new Set<number>();
 
-  const rotateClockwise = (b: BoardState): BoardState => {
-    const n = b.length;
-    const rotated = createEmptyBoard();
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        rotated[j][n - 1 - i] = b[i][j];
-      }
-    }
-    return rotated;
-  };
-
-  const rotateCounterClockwise = (b: BoardState): BoardState => {
-    const n = b.length;
-    const rotated = createEmptyBoard();
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        rotated[n - 1 - j][i] = b[i][j];
-      }
-    }
-    return rotated;
-  };
-
-  // Rotate board to make all movements "left"
-  let rotations = 0;
-  if (direction === "up") {
-    rotations = 1;
-    newBoard = rotateCounterClockwise(newBoard);
-  } else if (direction === "right") {
-    rotations = 2;
-    newBoard = rotateClockwise(rotateClockwise(newBoard));
-  } else if (direction === "down") {
-    rotations = 3;
-    newBoard = rotateClockwise(newBoard);
-  }
-
-  // Slide and merge left
   for (let row = 0; row < 4; row++) {
-    const line = newBoard[row].filter((cell) => cell !== null);
-    const merged: (number | null)[] = [];
+    const rowTiles = tiles
+      .filter((t) => t.position.row === row)
+      .sort((a, b) => a.position.col - b.position.col);
 
-    for (let i = 0; i < line.length; i++) {
-      if (i < line.length - 1 && line[i] === line[i + 1]) {
-        const value = line[i]! * 2;
-        merged.push(value);
-        score += value;
-        i++; // Skip next
+    let writeCol = 0;
+    for (let i = 0; i < rowTiles.length; i++) {
+      if (i < rowTiles.length - 1 && rowTiles[i].value === rowTiles[i + 1].value) {
+        // Merge: keep first tile, remove second
+        const keeper = rowTiles[i];
+        const consumed = rowTiles[i + 1];
+
+        keeper.value *= 2;
+        keeper.isMerged = true;
+        score += keeper.value;
+
+        if (keeper.position.col !== writeCol) moved = true;
+        keeper.position.col = writeCol;
+
+        toRemove.add(consumed.id);
+        moved = true;
+        writeCol++;
+        i++; // skip consumed tile
       } else {
-        merged.push(line[i]!);
+        if (rowTiles[i].position.col !== writeCol) moved = true;
+        rowTiles[i].position.col = writeCol;
+        writeCol++;
       }
     }
-
-    while (merged.length < 4) {
-      merged.push(null);
-    }
-
-    if (JSON.stringify(merged) !== JSON.stringify(newBoard[row])) {
-      moved = true;
-    }
-    newBoard[row] = merged;
   }
 
-  // Rotate back
+  // Remove consumed tiles
+  tiles = tiles.filter((t) => !toRemove.has(t.id));
+
+  // Reverse rotation to restore original orientation
   if (direction === "up") {
-    newBoard = rotateClockwise(newBoard);
+    tiles.forEach((t) => (t.position = rotateCW(t.position)));
   } else if (direction === "right") {
-    newBoard = rotateClockwise(rotateClockwise(newBoard));
+    tiles.forEach((t) => (t.position = applyRotation(t.position, rotateCW, 2)));
   } else if (direction === "down") {
-    newBoard = rotateCounterClockwise(newBoard);
+    tiles.forEach((t) => (t.position = rotateCCW(t.position)));
   }
 
-  return { board: newBoard, score, moved };
+  return { tiles, score, moved };
 }
 
 function canMove(board: BoardState): boolean {
-  // Check for empty cells
   if (getEmptyCells(board).length > 0) return true;
 
-  // Check for possible merges
   for (let row = 0; row < 4; row++) {
     for (let col = 0; col < 4; col++) {
       const current = board[row][col];
@@ -150,13 +169,20 @@ function hasWon(board: BoardState): boolean {
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>(() => {
-    let board = createEmptyBoard();
-    board = addRandomTile(board);
-    board = addRandomTile(board);
+    let tiles: TileData[] = [];
+    const board = createEmptyBoard();
+
+    // Add two initial tiles
+    const emptyCells = getEmptyCells(board);
+    const first = emptyCells.splice(Math.floor(Math.random() * emptyCells.length), 1)[0];
+    const second = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+    tiles.push(createTile(first.row, first.col, Math.random() < 0.9 ? 2 : 4, true));
+    tiles.push(createTile(second.row, second.col, Math.random() < 0.9 ? 2 : 4, true));
 
     return {
-      board,
-      tiles: boardToTiles(board),
+      board: buildBoard(tiles),
+      tiles,
       score: 0,
       moves: 0,
       gameOver: false,
@@ -168,17 +194,18 @@ export function useGame() {
     setGameState((prev) => {
       if (prev.gameOver) return prev;
 
-      const { board: newBoard, score: addedScore, moved } = move(prev.board, direction);
+      const { tiles: movedTiles, score: addedScore, moved } = moveTiles(prev.tiles, direction);
 
       if (!moved) return prev;
 
-      const boardWithNewTile = addRandomTile(newBoard);
-      const won = hasWon(boardWithNewTile);
-      const gameOver = !canMove(boardWithNewTile);
+      const tilesWithNew = addRandomTile(movedTiles);
+      const board = buildBoard(tilesWithNew);
+      const won = hasWon(board);
+      const gameOver = !canMove(board);
 
       return {
-        board: boardWithNewTile,
-        tiles: boardToTiles(boardWithNewTile),
+        board,
+        tiles: tilesWithNew,
         score: prev.score + addedScore,
         moves: prev.moves + 1,
         gameOver,
@@ -188,13 +215,18 @@ export function useGame() {
   }, []);
 
   const resetGame = useCallback(() => {
-    let board = createEmptyBoard();
-    board = addRandomTile(board);
-    board = addRandomTile(board);
+    let tiles: TileData[] = [];
+    const board = createEmptyBoard();
+    const emptyCells = getEmptyCells(board);
+    const first = emptyCells.splice(Math.floor(Math.random() * emptyCells.length), 1)[0];
+    const second = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+    tiles.push(createTile(first.row, first.col, Math.random() < 0.9 ? 2 : 4, true));
+    tiles.push(createTile(second.row, second.col, Math.random() < 0.9 ? 2 : 4, true));
 
     setGameState({
-      board,
-      tiles: boardToTiles(board),
+      board: buildBoard(tiles),
+      tiles,
       score: 0,
       moves: 0,
       gameOver: false,

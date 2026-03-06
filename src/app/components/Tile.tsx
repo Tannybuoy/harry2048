@@ -28,18 +28,25 @@ export function Tile({ tile }: TileProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0 }}
+      initial={tile.isNew ? { opacity: 0, scale: 0, x: col * 92, y: row * 92 } : false}
       animate={{
         opacity: 1,
-        scale: 1,
+        scale: tile.isMerged ? [1.15, 1] : 1,
         x: col * 92,
         y: row * 92,
       }}
       exit={{ opacity: 0, scale: 0 }}
       transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 25,
+        x: { type: "spring", stiffness: 400, damping: 30 },
+        y: { type: "spring", stiffness: 400, damping: 30 },
+        scale: tile.isNew
+          ? { type: "spring", stiffness: 400, damping: 20, delay: 0.1 }
+          : tile.isMerged
+            ? { duration: 0.15 }
+            : { duration: 0 },
+        opacity: tile.isNew
+          ? { duration: 0.1, delay: 0.1 }
+          : { duration: 0 },
       }}
       style={{
         backgroundColor: config.bg,
