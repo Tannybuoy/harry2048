@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "predev": "npm install",
     "dev": "vite"
   },
   "dependencies": {
