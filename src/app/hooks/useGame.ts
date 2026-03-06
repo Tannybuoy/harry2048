@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { GameState, Direction, BoardState, TileData } from "../types/game";
 
 let nextTileId = 1;
@@ -22,7 +22,9 @@ function getEmptyCells(board: BoardState): { row: number; col: number }[] {
 function buildBoard(tiles: TileData[]): BoardState {
   const board = createEmptyBoard();
   for (const tile of tiles) {
-    board[tile.position.row][tile.position.col] = tile.value;
+    if (!tile.isConsumed) {
+      board[tile.position.row][tile.position.col] = tile.value;
+    }
   }
   return board;
 }
@@ -97,8 +99,6 @@ function moveTiles(
 
   let score = 0;
   let moved = false;
-  const toRemove = new Set<number>();
-
   for (let row = 0; row < 4; row++) {
     const rowTiles = tiles
       .filter((t) => t.position.row === row)
@@ -107,18 +107,21 @@ function moveTiles(
     let writeCol = 0;
     for (let i = 0; i < rowTiles.length; i++) {
       if (i < rowTiles.length - 1 && rowTiles[i].value === rowTiles[i + 1].value) {
-        // Merge: keep first tile, remove second
+        // Merge: keep first tile, mark second as consumed
         const keeper = rowTiles[i];
         const consumed = rowTiles[i + 1];
 
-        keeper.value *= 2;
+        keeper.mergedValue = keeper.value * 2;
         keeper.isMerged = true;
-        score += keeper.value;
+        score += keeper.mergedValue;
 
         if (keeper.position.col !== writeCol) moved = true;
         keeper.position.col = writeCol;
 
-        toRemove.add(consumed.id);
+        // Move consumed tile to same position so it animates sliding in
+        consumed.position.col = writeCol;
+        consumed.isConsumed = true;
+
         moved = true;
         writeCol++;
         i++; // skip consumed tile
@@ -129,9 +132,6 @@ function moveTiles(
       }
     }
   }
-
-  // Remove consumed tiles
-  tiles = tiles.filter((t) => !toRemove.has(t.id));
 
   // Reverse rotation to restore original orientation
   if (direction === "up") {
@@ -168,6 +168,7 @@ function hasWon(board: BoardState): boolean {
 }
 
 export function useGame() {
+  const isAnimating = useRef(false);
   const [gameState, setGameState] = useState<GameState>(() => {
     let tiles: TileData[] = [];
     const board = createEmptyBoard();
@@ -191,6 +192,8 @@ export function useGame() {
   });
 
   const makeMove = useCallback((direction: Direction) => {
+    if (isAnimating.current) return;
+
     setGameState((prev) => {
       if (prev.gameOver) return prev;
 
@@ -198,6 +201,62 @@ export function useGame() {
 
       if (!moved) return prev;
 
+      const hasConsumed = movedTiles.some((t) => t.isConsumed);
+
+      if (hasConsumed) {
+        // Two-phase merge: first slide all tiles, then resolve merges
+        isAnimating.current = true;
+
+        const phase1Tiles = movedTiles.map((t) => ({
+          ...t,
+          isMerged: false,
+        }));
+
+        // Schedule phase 2
+        setTimeout(() => {
+          setGameState((phase1) => {
+            const activeTiles = phase1.tiles
+              .filter((t) => !t.isConsumed)
+              .map((t) => ({ ...t }));
+
+            // Apply merged values
+            activeTiles.forEach((t) => {
+              if (t.mergedValue) {
+                t.value = t.mergedValue;
+                t.mergedValue = undefined;
+                t.isMerged = true;
+              }
+            });
+
+            const tilesWithNew = addRandomTile(activeTiles);
+            const board = buildBoard(tilesWithNew);
+            const won = hasWon(board);
+            const gameOver = !canMove(board);
+
+            isAnimating.current = false;
+
+            return {
+              board,
+              tiles: tilesWithNew,
+              score: phase1.score,
+              moves: phase1.moves,
+              gameOver,
+              won: won || phase1.won,
+            };
+          });
+        }, 100);
+
+        return {
+          board: prev.board,
+          tiles: phase1Tiles,
+          score: prev.score + addedScore,
+          moves: prev.moves + 1,
+          gameOver: false,
+          won: prev.won,
+        };
+      }
+
+      // No merges — just slide and add new tile immediately
       const tilesWithNew = addRandomTile(movedTiles);
       const board = buildBoard(tilesWithNew);
       const won = hasWon(board);
@@ -215,6 +274,7 @@ export function useGame() {
   }, []);
 
   const resetGame = useCallback(() => {
+    isAnimating.current = false;
     let tiles: TileData[] = [];
     const board = createEmptyBoard();
     const emptyCells = getEmptyCells(board);

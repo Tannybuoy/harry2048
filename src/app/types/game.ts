@@ -6,6 +6,8 @@ export interface TileData {
   position: { row: number; col: number };
   isNew?: boolean;
   isMerged?: boolean;
+  isConsumed?: boolean;
+  mergedValue?: number;
 }
 
 export interface GameState {
