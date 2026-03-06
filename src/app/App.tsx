@@ -45,20 +45,20 @@ export default function App() {
           <p className="text-[#E89AC7] text-lg">Merge tiles to reach the Elder Wand! ⚡</p>
         </div>
 
-        {/* Score Panel */}
-        <div className="flex justify-between items-center mb-6 gap-4">
-          <div className="flex-1 bg-[#8B7A8B] rounded-2xl p-4 text-center">
-            <div className="text-[#E89AC7] text-sm uppercase tracking-wide mb-1">Score</div>
-            <div className="text-[#F4B860] text-3xl font-bold">{gameState.score}</div>
+        {/* Score Panel + Game Board aligned container */}
+        <div className="w-fit mx-auto">
+          <div className="flex justify-between items-center mb-6 gap-4">
+            <div className="flex-1 bg-[#8B7A8B] rounded-2xl p-4 text-center">
+              <div className="text-[#E89AC7] text-sm uppercase tracking-wide mb-1">Score</div>
+              <div className="text-[#F4B860] text-3xl font-bold">{gameState.score}</div>
+            </div>
+            <div className="flex-1 bg-[#8B7A8B] rounded-2xl p-4 text-center">
+              <div className="text-[#E89AC7] text-sm uppercase tracking-wide mb-1">Moves</div>
+              <div className="text-[#F4B860] text-3xl font-bold">{gameState.moves}</div>
+            </div>
           </div>
-          <div className="flex-1 bg-[#8B7A8B] rounded-2xl p-4 text-center">
-            <div className="text-[#E89AC7] text-sm uppercase tracking-wide mb-1">Moves</div>
-            <div className="text-[#F4B860] text-3xl font-bold">{gameState.moves}</div>
-          </div>
-        </div>
 
-        {/* Game Board */}
-        <div className="flex justify-center">
+          {/* Game Board */}
           <GameBoard board={gameState.board} tiles={gameState.tiles} />
         </div>
 
