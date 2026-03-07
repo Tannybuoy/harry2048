@@ -7,7 +7,7 @@ import { Sparkles, RotateCcw, HelpCircle } from "lucide-react";
 import backgroundImage from "../../background.jpg";
 
 export default function App() {
-  const { gameState, resetGame } = useGame();
+  const { gameState, makeMove, resetGame } = useGame();
   const [continueAfterWin, setContinueAfterWin] = useState(false);
   const [showRules, setShowRules] = useState(false);
 
@@ -59,12 +59,13 @@ export default function App() {
           </div>
 
           {/* Game Board */}
-          <GameBoard board={gameState.board} tiles={gameState.tiles} />
+          <GameBoard board={gameState.board} tiles={gameState.tiles} onSwipe={makeMove} />
         </div>
 
         {/* Instructions */}
         <div className="mt-6 text-center text-[#E89AC7] text-sm">
-          <p>Use arrow keys to move tiles. Merge identical items to progress!</p>
+          <p className="hidden md:block">Use arrow keys to move tiles. Merge identical items to progress!</p>
+          <p className="md:hidden">Swipe to move tiles. Merge identical items to progress!</p>
         </div>
 
         {/* Action Buttons */}

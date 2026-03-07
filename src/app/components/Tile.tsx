@@ -3,6 +3,8 @@ import type { TileData } from "../types/game";
 
 interface TileProps {
   tile: TileData;
+  tileSize: number;
+  tileStep: number;
 }
 
 const tileConfig: Record<
@@ -22,18 +24,19 @@ const tileConfig: Record<
   2048: { bg: "#F5C842", text: "#7A3E8B", emoji: "⚡", label: "Elder Wand" },
 };
 
-export function Tile({ tile }: TileProps) {
+export function Tile({ tile, tileSize, tileStep }: TileProps) {
   const config = tileConfig[tile.value] || tileConfig[2];
   const { row, col } = tile.position;
+  const isSmall = tileSize < 70;
 
   return (
     <motion.div
-      initial={tile.isNew ? { opacity: 0, scale: 0, x: col * 92, y: row * 92 } : false}
+      initial={tile.isNew ? { opacity: 0, scale: 0, x: col * tileStep, y: row * tileStep } : false}
       animate={{
         opacity: 1,
         scale: tile.isMerged ? [1.15, 1] : 1,
-        x: col * 92,
-        y: row * 92,
+        x: col * tileStep,
+        y: row * tileStep,
       }}
       exit={tile.isConsumed ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, scale: 0 }}
       transition={{
@@ -51,11 +54,13 @@ export function Tile({ tile }: TileProps) {
       style={{
         backgroundColor: config.bg,
         color: config.text,
+        width: tileSize,
+        height: tileSize,
       }}
-      className="absolute w-20 h-20 rounded-xl flex flex-col items-center justify-center shadow-lg"
+      className="absolute rounded-xl flex flex-col items-center justify-center shadow-lg"
     >
-      <div className="text-2xl mb-0.5">{config.emoji}</div>
-      <div className="text-xs font-semibold">{config.label}</div>
+      <div className={isSmall ? "text-xl mb-0" : "text-2xl mb-0.5"}>{config.emoji}</div>
+      <div className={isSmall ? "text-[10px] font-semibold" : "text-xs font-semibold"}>{config.label}</div>
     </motion.div>
   );
 }
