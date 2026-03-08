@@ -17,10 +17,10 @@ const tileConfig: Record<
   16: { bg: "#F5A962", text: "#FFFFFF", emoji: "⚗️", label: "Potion" },
   32: { bg: "#F58F4B", text: "#FFFFFF", emoji: "🧹", label: "Broomstick" },
   64: { bg: "#E57C5F", text: "#FFFFFF", emoji: "✨", label: "Patronus" },
-  128: { bg: "#D4668B", text: "#FFFFFF", emoji: "🗺️", label: "Map" },
+  128: { bg: "#D4668B", text: "#FFFFFF", emoji: "🐉", label: "Dragon" },
   256: { bg: "#B857A3", text: "#FFFFFF", emoji: "🏆", label: "Trophy" },
   512: { bg: "#9B4D9E", text: "#FFFFFF", emoji: "💀", label: "Horcrux" },
-  1024: { bg: "#7A3E8B", text: "#FFFFFF", emoji: "🔥", label: "Phoenix" },
+  1024: { bg: "#7A3E8B", text: "#FFFFFF", emoji: "🗡️", label: "Sword" },
   2048: { bg: "#F5C842", text: "#7A3E8B", emoji: "⚡", label: "Elder Wand" },
 };
 
