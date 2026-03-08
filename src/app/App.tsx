@@ -1,15 +1,31 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { GameBoard } from "./components/GameBoard";
 import { GameOverModal } from "./components/GameOverModal";
 import { RulesModal } from "./components/RulesModal";
 import { useGame } from "./hooks/useGame";
-import { Sparkles, RotateCcw, HelpCircle } from "lucide-react";
+import { Sparkles, RotateCcw, HelpCircle, Volume2, VolumeX } from "lucide-react";
 import backgroundImage from "../../background.jpg";
+import leviosaMusic from "../../leviosa.mp3";
 
 export default function App() {
   const { gameState, makeMove, resetGame } = useGame();
   const [continueAfterWin, setContinueAfterWin] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggleMusic = useCallback(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(leviosaMusic);
+      audioRef.current.loop = true;
+    }
+    if (isMusicPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsMusicPlaying(!isMusicPlaying);
+  }, [isMusicPlaying]);
 
   const showModal = gameState.won && !continueAfterWin ? true : gameState.gameOver;
 
@@ -83,6 +99,17 @@ export default function App() {
             title="Rules"
           >
             <HelpCircle className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+          <button
+            onClick={toggleMusic}
+            className="bg-[#F4B860] hover:bg-[#F5C997] text-[#594761] p-3 md:p-4 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl"
+            title={isMusicPlaying ? "Mute Music" : "Play Music"}
+          >
+            {isMusicPlaying ? (
+              <Volume2 className="w-5 h-5 md:w-6 md:h-6" />
+            ) : (
+              <VolumeX className="w-5 h-5 md:w-6 md:h-6" />
+            )}
           </button>
         </div>
       </div>
