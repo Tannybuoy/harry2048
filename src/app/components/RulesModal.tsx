@@ -10,13 +10,13 @@ export function RulesModal({ onClose }: RulesModalProps) {
     { value: 2, emoji: "🪄", name: "Wand", color: "#F5EFE6" },
     { value: 4, emoji: "📖", name: "Spellbook", color: "#EBE0D4" },
     { value: 8, emoji: "🦉", name: "Owl", color: "#F5C997" },
-    { value: 16, emoji: "🧪", name: "Potion", color: "#F5A962" },
+    { value: 16, emoji: "⚗️", name: "Potion", color: "#F5A962" },
     { value: 32, emoji: "🧹", name: "Broomstick", color: "#F58F4B" },
-    { value: 64, emoji: "🛡️", name: "House Crest", color: "#E57C5F" },
-    { value: 128, emoji: "✨", name: "Patronus", color: "#D4668B" },
+    { value: 64, emoji: "✨", name: "Patronus", color: "#E57C5F" },
+    { value: 128, emoji: "🐉", name: "Dragon", color: "#D4668B" },
     { value: 256, emoji: "🏆", name: "Trophy", color: "#B857A3" },
-    { value: 512, emoji: "👻", name: "Cloak", color: "#9B4D9E" },
-    { value: 1024, emoji: "💀", name: "Horcrux", color: "#7A3E8B" },
+    { value: 512, emoji: "💀", name: "Horcrux", color: "#9B4D9E" },
+    { value: 1024, emoji: "🗡️", name: "Sword", color: "#7A3E8B" },
     { value: 2048, emoji: "⚡", name: "Elder Wand", color: "#F5C842" },
   ];
 
