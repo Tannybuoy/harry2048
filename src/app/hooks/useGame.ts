@@ -169,6 +169,7 @@ function hasWon(board: BoardState): boolean {
 
 export function useGame() {
   const isAnimating = useRef(false);
+  const [previousState, setPreviousState] = useState<GameState | null>(null);
   const [gameState, setGameState] = useState<GameState>(() => {
     let tiles: TileData[] = [];
     const board = createEmptyBoard();
@@ -200,6 +201,9 @@ export function useGame() {
       const { tiles: movedTiles, score: addedScore, moved } = moveTiles(prev.tiles, direction);
 
       if (!moved) return prev;
+
+      // Save current state for undo
+      setPreviousState(prev);
 
       const hasConsumed = movedTiles.some((t) => t.isConsumed);
 
@@ -273,8 +277,15 @@ export function useGame() {
     });
   }, []);
 
+  const undoMove = useCallback(() => {
+    if (isAnimating.current || !previousState) return;
+    setGameState(previousState);
+    setPreviousState(null);
+  }, [previousState]);
+
   const resetGame = useCallback(() => {
     isAnimating.current = false;
+    setPreviousState(null);
     let tiles: TileData[] = [];
     const board = createEmptyBoard();
     const emptyCells = getEmptyCells(board);
@@ -312,5 +323,5 @@ export function useGame() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [makeMove]);
 
-  return { gameState, makeMove, resetGame };
+  return { gameState, makeMove, resetGame, undoMove, canUndo: previousState !== null };
 }

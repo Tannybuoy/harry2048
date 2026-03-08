@@ -3,12 +3,12 @@ import { GameBoard } from "./components/GameBoard";
 import { GameOverModal } from "./components/GameOverModal";
 import { RulesModal } from "./components/RulesModal";
 import { useGame } from "./hooks/useGame";
-import { Sparkles, RotateCcw, HelpCircle, Volume2, VolumeX } from "lucide-react";
+import { Sparkles, RotateCcw, HelpCircle, Volume2, VolumeX, Undo2 } from "lucide-react";
 import backgroundImage from "../../background.jpg";
 import leviosaMusic from "../../leviosa.mp3";
 
 export default function App() {
-  const { gameState, makeMove, resetGame } = useGame();
+  const { gameState, makeMove, resetGame, undoMove, canUndo } = useGame();
   const [continueAfterWin, setContinueAfterWin] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
@@ -99,6 +99,14 @@ export default function App() {
             title="New Game"
           >
             <RotateCcw className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+          <button
+            onClick={undoMove}
+            disabled={!canUndo}
+            className="bg-[#F4B860] hover:bg-[#F5C997] text-[#594761] p-3 md:p-4 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#F4B860]"
+            title="Undo Move"
+          >
+            <Undo2 className="w-5 h-5 md:w-6 md:h-6" />
           </button>
           <button
             onClick={() => setShowRules(true)}
