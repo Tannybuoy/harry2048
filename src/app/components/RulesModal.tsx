@@ -10,7 +10,7 @@ export function RulesModal({ onClose }: RulesModalProps) {
     { value: 2, emoji: "🪄", name: "Wand", color: "#F5EFE6" },
     { value: 4, emoji: "📖", name: "Spellbook", color: "#EBE0D4" },
     { value: 8, emoji: "🦉", name: "Owl", color: "#F5C997" },
-    { value: 16, emoji: "🧪", name: "Potion", color: "#F5A962" },
+    { value: 16, emoji: "⚗️", name: "Potion", color: "#F5A962" },
     { value: 32, emoji: "🧹", name: "Broomstick", color: "#F58F4B" },
     { value: 64, emoji: "✨", name: "Patronus", color: "#E57C5F" },
     { value: 128, emoji: "🗺️", name: "Map", color: "#D4668B" },

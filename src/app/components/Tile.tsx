@@ -14,7 +14,7 @@ const tileConfig: Record<
   2: { bg: "#F5EFE6", text: "#7A6E7A", emoji: "🪄", label: "Wand" },
   4: { bg: "#EBE0D4", text: "#7A6E7A", emoji: "📖", label: "Spellbook" },
   8: { bg: "#F5C997", text: "#FFFFFF", emoji: "🦉", label: "Owl" },
-  16: { bg: "#F5A962", text: "#FFFFFF", emoji: "🧪", label: "Potion" },
+  16: { bg: "#F5A962", text: "#FFFFFF", emoji: "⚗️", label: "Potion" },
   32: { bg: "#F58F4B", text: "#FFFFFF", emoji: "🧹", label: "Broomstick" },
   64: { bg: "#E57C5F", text: "#FFFFFF", emoji: "✨", label: "Patronus" },
   128: { bg: "#D4668B", text: "#FFFFFF", emoji: "🗺️", label: "Map" },
